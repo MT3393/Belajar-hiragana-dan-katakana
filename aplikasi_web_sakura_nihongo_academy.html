@@ -1,0 +1,1356 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sakura Nihongo Academy - 学びましょう！</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Poppins & Kosugi Maru -->
+    <link href="https://fonts.googleapis.com/css2?family=Kosugi+Maru&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        sakura: {
+                            100: '#fff0f5',
+                            200: '#ffe4e1',
+                            300: '#ffb7c5',
+                            400: '#ff9ebb',
+                            500: '#ff69b4',
+                            600: '#e05297',
+                        },
+                        fuji: '#6b5b95',
+                        matcha: '#88d8b0',
+                    },
+                    fontFamily: {
+                        poppins: ['Poppins', 'sans-serif'],
+                        japanese: ['Kosugi Maru', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #fff0f5 0%, #e6e6fa 50%, #ffe4e1 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Sakura Canvas Animation Overlay */
+        #sakura-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .font-jp {
+            font-family: 'Kosugi Maru', sans-serif;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 183, 197, 0.4);
+            box-shadow: 0 10px 30px rgba(224, 82, 151, 0.1);
+        }
+
+        .btn-sakura {
+            background: linear-gradient(135deg, #ff9ebb 0%, #ff69b4 100%);
+            box-shadow: 0 4px 15px rgba(255, 105, 180, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .btn-sakura:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 105, 180, 0.4);
+        }
+
+        .kana-card {
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .kana-card:hover {
+            transform: scale(1.08);
+            border-color: #ff69b4;
+            box-shadow: 0 8px 20px rgba(255, 105, 180, 0.25);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #fff0f5;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #ffb7c5;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #ff69b4;
+        }
+    </style>
+</head>
+<body class="text-slate-800 pb-12 relative z-10">
+
+    <!-- Canvas for Floating Sakura Petals -->
+    <canvas id="sakura-canvas"></canvas>
+
+    <!-- Navigation Header -->
+    <header class="sticky top-0 z-50 glass-card border-b border-sakura-300/50 mb-6">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="showSection('dashboard')">
+                <div class="w-10 h-10 rounded-full bg-sakura-400 flex items-center justify-center text-white text-xl shadow-md">
+                    🌸
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg md:text-xl text-sakura-600 tracking-wide font-jp">Sakura Academy</h1>
+                    <p class="text-[10px] text-slate-500 font-medium">日本語を楽しく学びましょう！</p>
+                </div>
+            </div>
+            
+            <nav class="hidden md:flex space-x-2">
+                <button onclick="showSection('dashboard')" class="px-3 py-1.5 rounded-xl text-sm font-medium hover:bg-sakura-200 text-slate-700 transition"><i class="fa-solid fa-house mr-1 text-sakura-500"></i> Beranda</button>
+                <button onclick="openLearning('hiragana')" class="px-3 py-1.5 rounded-xl text-sm font-medium hover:bg-sakura-200 text-slate-700 transition">Hiragana</button>
+                <button onclick="openLearning('katakana')" class="px-3 py-1.5 rounded-xl text-sm font-medium hover:bg-sakura-200 text-slate-700 transition">Katakana</button>
+                <button onclick="openQuizSetup('hiragana')" class="px-3 py-1.5 rounded-xl text-sm font-medium hover:bg-sakura-200 text-slate-700 transition">Latihan Hiragana</button>
+                <button onclick="openQuizSetup('katakana')" class="px-3 py-1.5 rounded-xl text-sm font-medium hover:bg-sakura-200 text-slate-700 transition">Latihan Katakana</button>
+            </nav>
+
+            <!-- Mobile Menu Toggle Button -->
+            <button onclick="toggleMobileMenu()" class="md:hidden text-sakura-600 p-2 text-xl focus:outline-none">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+        </div>
+
+        <!-- Mobile Navigation Dropdown -->
+        <div id="mobile-menu" class="hidden md:hidden px-4 pb-4 pt-2 border-t border-sakura-200 space-y-2 bg-white/95">
+            <button onclick="showSection('dashboard'); toggleMobileMenu()" class="w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-sakura-100 font-medium"><i class="fa-solid fa-house mr-2 text-sakura-500"></i> Beranda</button>
+            <button onclick="openLearning('hiragana'); toggleMobileMenu()" class="w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-sakura-100 font-medium">🌸 Belajar Hiragana</button>
+            <button onclick="openLearning('katakana'); toggleMobileMenu()" class="w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-sakura-100 font-medium">🎐 Belajar Katakana</button>
+            <button onclick="openQuizSetup('hiragana'); toggleMobileMenu()" class="w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-sakura-100 font-medium">✍️ Latihan Hiragana</button>
+            <button onclick="openQuizSetup('katakana'); toggleMobileMenu()" class="w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-sakura-100 font-medium">🎮 Latihan Katakana</button>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-6xl mx-auto px-4 relative z-10">
+
+        <!-- SECTION 1: DASHBOARD UTAMA -->
+        <section id="sec-dashboard" class="space-y-8">
+            <!-- Sensei Greeting Banner -->
+            <div class="glass-card rounded-3xl p-6 md:p-8 flex flex-col md:flex-row items-center gap-6 relative overflow-hidden">
+                <div class="absolute -right-10 -bottom-10 w-48 h-48 bg-sakura-300/30 rounded-full blur-2xl"></div>
+                
+                <!-- Anime Maskot Visual -->
+                <div class="w-36 h-36 md:w-44 md:h-44 flex-shrink-0 bg-gradient-to-tr from-sakura-300 to-sakura-100 rounded-full p-2 border-4 border-white shadow-xl relative">
+                    <svg viewBox="0 0 200 200" class="w-full h-full rounded-full">
+                        <circle cx="100" cy="100" r="90" fill="#FFE4E1"/>
+                        <!-- Hair background -->
+                        <path d="M 40 100 Q 100 20 160 100 Q 160 160 140 180 Q 100 170 60 180 Z" fill="#4A2E35"/>
+                        <!-- Kimono Collar -->
+                        <path d="M 60 150 L 100 180 L 140 150 L 120 200 L 80 200 Z" fill="#FF69B4"/>
+                        <path d="M 75 160 L 100 180 L 125 160" stroke="#FFF" stroke-width="4" fill="none"/>
+                        <!-- Face -->
+                        <ellipse cx="100" cy="105" rx="45" ry="40" fill="#FFDFC4"/>
+                        <!-- Bangs -->
+                        <path d="M 55 90 Q 75 110 85 95 Q 100 115 115 95 Q 125 110 145 90 Q 130 65 100 65 Q 70 65 55 90 Z" fill="#5C3A42"/>
+                        <!-- Eyes -->
+                        <ellipse cx="80" cy="105" rx="6" ry="9" fill="#2E4A3E"/>
+                        <ellipse cx="120" cy="105" rx="6" ry="9" fill="#2E4A3E"/>
+                        <circle cx="82" cy="102" r="2.5" fill="#FFF"/>
+                        <circle cx="122" cy="102" r="2.5" fill="#FFF"/>
+                        <!-- Blush -->
+                        <ellipse cx="73" cy="115" rx="7" ry="4" fill="#FFB7C5" opacity="0.8"/>
+                        <ellipse cx="127" cy="115" rx="7" ry="4" fill="#FFB7C5" opacity="0.8"/>
+                        <!-- Smile -->
+                        <path d="M 92 118 Q 100 125 108 118" stroke="#D2691E" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+                        <!-- Sakura Hairpin -->
+                        <path d="M 135 80 L 145 75 L 140 85 Z" fill="#FF1493"/>
+                        <circle cx="138" cy="80" r="4" fill="#FFD700"/>
+                    </svg>
+                    <span class="absolute bottom-1 right-1 bg-emerald-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full border-2 border-white shadow">
+                        N1 SENSEI
+                    </span>
+                </div>
+
+                <!-- Sensei Message -->
+                <div class="space-y-3 text-center md:text-left flex-1">
+                    <div class="inline-block px-3 py-1 bg-sakura-200 text-sakura-600 rounded-full text-xs font-semibold tracking-wider uppercase">
+                        Konnichiwa! こんにちは！
+                    </div>
+                    <h2 class="text-2xl md:text-3xl font-bold text-slate-800">
+                        Selamat Datang di <span class="text-sakura-600 font-jp">Sakura Academy</span>
+                    </h2>
+                    <p class="text-sm md:text-base text-slate-600 leading-relaxed">
+                        "Saya Sensei yang akan membimbing Anda menguasai fondasi Bahasa Jepang dari nol. Mari kita pelajari sistem penulisan Hiragana & Katakana secara terstruktur, lalu uji pemahaman Anda pada modul kuis bertingkat!"
+                    </p>
+                    <div class="pt-2 flex flex-wrap gap-3 justify-center md:justify-start">
+                        <button onclick="openLearning('hiragana')" class="btn-sakura text-white px-5 py-2.5 rounded-xl font-semibold text-sm flex items-center">
+                            <i class="fa-solid fa-book-open mr-2"></i> Mulai Belajar Hiragana
+                        </button>
+                        <button onclick="openQuizSetup('hiragana')" class="bg-white hover:bg-sakura-100 text-sakura-600 border border-sakura-300 px-5 py-2.5 rounded-xl font-semibold text-sm transition flex items-center">
+                            <i class="fa-solid fa-gamepad mr-2"></i> Uji Kemampuan (Kuis)
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation Cards Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                <!-- Card 1: Belajar Hiragana -->
+                <div onclick="openLearning('hiragana')" class="glass-card rounded-2xl p-5 hover:border-sakura-500 cursor-pointer transition-all duration-300 hover:-translate-y-1 group">
+                    <div class="w-12 h-12 rounded-2xl bg-sakura-200 flex items-center justify-center text-sakura-600 text-2xl font-bold mb-4 group-hover:scale-110 transition">
+                        あ
+                    </div>
+                    <h3 class="font-bold text-lg text-slate-800 mb-1">Belajar Hiragana</h3>
+                    <p class="text-xs text-slate-500 mb-4">Pelajari 46 huruf dasar, Dakuon, Handakuon & Yoon beserta contoh kata.</p>
+                    <span class="text-xs font-semibold text-sakura-600 flex items-center group-hover:translate-x-1 transition">
+                        Buka Materi <i class="fa-solid fa-arrow-right ml-1"></i>
+                    </span>
+                </div>
+
+                <!-- Card 2: Belajar Katakana -->
+                <div onclick="openLearning('katakana')" class="glass-card rounded-2xl p-5 hover:border-indigo-400 cursor-pointer transition-all duration-300 hover:-translate-y-1 group">
+                    <div class="w-12 h-12 rounded-2xl bg-indigo-100 flex items-center justify-center text-indigo-600 text-2xl font-bold mb-4 group-hover:scale-110 transition">
+                        ア
+                    </div>
+                    <h3 class="font-bold text-lg text-slate-800 mb-1">Belajar Katakana</h3>
+                    <p class="text-xs text-slate-500 mb-4">Kuasai huruf khusus kata serapan asing beserta tata cara penulisan stroke.</p>
+                    <span class="text-xs font-semibold text-indigo-600 flex items-center group-hover:translate-x-1 transition">
+                        Buka Materi <i class="fa-solid fa-arrow-right ml-1"></i>
+                    </span>
+                </div>
+
+                <!-- Card 3: Latihan Hiragana -->
+                <div onclick="openQuizSetup('hiragana')" class="glass-card rounded-2xl p-5 hover:border-emerald-400 cursor-pointer transition-all duration-300 hover:-translate-y-1 group">
+                    <div class="w-12 h-12 rounded-2xl bg-emerald-100 flex items-center justify-center text-emerald-600 text-2xl font-bold mb-4 group-hover:scale-110 transition">
+                        <i class="fa-solid fa-pen-nib"></i>
+                    </div>
+                    <h3 class="font-bold text-lg text-slate-800 mb-1">Latihan Hiragana</h3>
+                    <p class="text-xs text-slate-500 mb-4">Uji ingatan Hiragana dari Level 1 hingga Level 5 dengan sistem tantangan waktu.</p>
+                    <span class="text-xs font-semibold text-emerald-600 flex items-center group-hover:translate-x-1 transition">
+                        Mulai Kuis <i class="fa-solid fa-play ml-1"></i>
+                    </span>
+                </div>
+
+                <!-- Card 4: Latihan Katakana -->
+                <div onclick="openQuizSetup('katakana')" class="glass-card rounded-2xl p-5 hover:border-amber-400 cursor-pointer transition-all duration-300 hover:-translate-y-1 group">
+                    <div class="w-12 h-12 rounded-2xl bg-amber-100 flex items-center justify-center text-amber-600 text-2xl font-bold mb-4 group-hover:scale-110 transition">
+                        <i class="fa-solid fa-trophy"></i>
+                    </div>
+                    <h3 class="font-bold text-lg text-slate-800 mb-1">Latihan Katakana</h3>
+                    <p class="text-xs text-slate-500 mb-4">Tantang diri Anda menebak kata-kata Katakana kompleks & capai skor tertinggi!</p>
+                    <span class="text-xs font-semibold text-amber-600 flex items-center group-hover:translate-x-1 transition">
+                        Mulai Kuis <i class="fa-solid fa-play ml-1"></i>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Sensei Learning Tips Card -->
+            <div class="glass-card rounded-2xl p-6 border-l-4 border-sakura-500 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div class="space-y-1">
+                    <h4 class="font-bold text-slate-800 flex items-center">
+                        <i class="fa-solid fa-lightbulb text-amber-400 mr-2 text-lg"></i> Tips Sensei untuk Pemula
+                    </h4>
+                    <p class="text-xs md:text-sm text-slate-600 leading-relaxed">
+                        Jangan hanya dihafal bentuknya! Latihlah ingatan Anda dengan mengucapkan bunyi huruf (*Romaji*) dan menggambarkan urutan goresannya (*Stroke Order*) secara konsisten setiap hari.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: MODUL BELAJAR (HIRAGANA & KATAKANA) -->
+        <section id="sec-learning" class="hidden space-y-6">
+            <!-- Header Bar -->
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <button onclick="showSection('dashboard')" class="text-xs font-semibold text-sakura-600 hover:text-sakura-700 mb-1 flex items-center">
+                        <i class="fa-solid fa-arrow-left mr-1"></i> Kembali ke Beranda
+                    </button>
+                    <h2 id="learning-title" class="text-2xl font-bold text-slate-800 font-jp">Materi Belajar Kana</h2>
+                </div>
+
+                <!-- Category Tab Buttons -->
+                <div class="flex p-1 bg-slate-200/80 rounded-xl text-xs font-semibold text-slate-600 w-full sm:w-auto">
+                    <button id="tab-seion" onclick="switchKanaTab('seion')" class="flex-1 sm:flex-initial px-4 py-2 rounded-lg transition bg-white text-sakura-600 shadow">Huruf Dasar (Seion)</button>
+                    <button id="tab-dakuon" onclick="switchKanaTab('dakuon')" class="flex-1 sm:flex-initial px-4 py-2 rounded-lg transition">Dakuon & Handakuon</button>
+                    <button id="tab-yoon" onclick="switchKanaTab('yoon')" class="flex-1 sm:flex-initial px-4 py-2 rounded-lg transition">Yoon (Gabungan)</button>
+                </div>
+            </div>
+
+            <!-- Sensei Explanation Banner -->
+            <div id="learning-explanation" class="glass-card rounded-2xl p-4 text-xs md:text-sm text-slate-700 leading-relaxed border-l-4 border-sakura-400">
+                <!-- Dynamic Text From JS -->
+            </div>
+
+            <!-- Kana Grid Area -->
+            <div id="kana-grid-container" class="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-3 md:gap-4">
+                <!-- Dynamically Inserted Cards -->
+            </div>
+        </section>
+
+        <!-- Kana Detail & Stroke Modal -->
+        <div id="kana-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+            <div class="glass-card bg-white/95 rounded-3xl max-w-sm w-full p-6 text-center relative space-y-4 shadow-2xl">
+                <button onclick="closeKanaModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+
+                <div class="inline-block px-3 py-1 bg-sakura-100 text-sakura-600 text-xs font-semibold rounded-full uppercase" id="modal-type">
+                    HIRAGANA
+                </div>
+
+                <!-- Big Kana & Stroke Canvas -->
+                <div class="relative w-36 h-36 mx-auto bg-sakura-50/80 rounded-2xl border-2 border-sakura-200 flex items-center justify-center overflow-hidden shadow-inner">
+                    <canvas id="stroke-canvas" width="144" height="144" class="absolute inset-0 z-10"></canvas>
+                    <span id="modal-kana-char" class="font-jp text-7xl text-slate-800 font-bold z-0">あ</span>
+                </div>
+
+                <div>
+                    <h3 id="modal-romaji" class="text-xl font-bold text-sakura-600">A</h3>
+                    <p id="modal-description" class="text-xs text-slate-500 mt-1">Goresan dasar vokal utama dalam bahasa Jepang.</p>
+                </div>
+
+                <!-- Example Words Table -->
+                <div class="bg-slate-50 rounded-xl p-3 text-left space-y-2 border border-slate-200/60">
+                    <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Contoh Penggunaan Kata:</span>
+                    <div id="modal-examples" class="space-y-1.5 text-xs text-slate-700">
+                        <!-- Inserted Via JS -->
+                    </div>
+                </div>
+
+                <button onclick="replayStrokeAnimation()" class="w-full py-2.5 bg-sakura-500 hover:bg-sakura-600 text-white font-semibold text-xs rounded-xl shadow transition flex items-center justify-center">
+                    <i class="fa-solid fa-play mr-2"></i> Putar Ulang Animasi Goresan
+                </button>
+            </div>
+        </div>
+
+        <!-- SECTION 3: QUIZ SETUP / LEVEL SELECTOR -->
+        <section id="sec-quiz-setup" class="hidden space-y-6">
+            <button onclick="showSection('dashboard')" class="text-xs font-semibold text-sakura-600 hover:text-sakura-700 flex items-center">
+                <i class="fa-solid fa-arrow-left mr-1"></i> Kembali ke Beranda
+            </button>
+
+            <div class="text-center max-w-xl mx-auto space-y-2">
+                <h2 id="quiz-setup-title" class="text-2xl font-bold text-slate-800 font-jp">Pilih Level Latihan Hiragana</h2>
+                <p class="text-xs md:text-sm text-slate-600">Pilih tingkat kesulitan kuis untuk menguji dan mengasah ingatan Anda.</p>
+            </div>
+
+            <!-- Level Cards List -->
+            <div class="max-w-3xl mx-auto space-y-4">
+                <!-- Level 1 -->
+                <div onclick="startQuiz(1)" class="glass-card rounded-2xl p-5 flex items-center justify-between hover:border-sakura-400 cursor-pointer transition group">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-600 font-bold flex items-center justify-center text-lg">
+                            L1
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-slate-800 text-base group-hover:text-sakura-600 transition">Level 1: Dasar Pemula</h3>
+                            <p class="text-xs text-slate-500">10 Soal • Kata 1 Huruf (Seion Dasar) • Tanpa Batas Waktu</p>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-slate-400 group-hover:text-sakura-500 group-hover:translate-x-1 transition"></i>
+                </div>
+
+                <!-- Level 2 -->
+                <div onclick="startQuiz(2)" class="glass-card rounded-2xl p-5 flex items-center justify-between hover:border-sakura-400 cursor-pointer transition group">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 font-bold flex items-center justify-center text-lg">
+                            L2
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-slate-800 text-base group-hover:text-sakura-600 transition">Level 2: Menengah</h3>
+                            <p class="text-xs text-slate-500">15 Soal • Kata 3 Huruf • Tanpa Batas Waktu</p>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-slate-400 group-hover:text-sakura-500 group-hover:translate-x-1 transition"></i>
+                </div>
+
+                <!-- Level 3 -->
+                <div onclick="startQuiz(3)" class="glass-card rounded-2xl p-5 flex items-center justify-between hover:border-sakura-400 cursor-pointer transition group">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 rounded-xl bg-amber-100 text-amber-600 font-bold flex items-center justify-center text-lg">
+                            L3
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-slate-800 text-base group-hover:text-sakura-600 transition">Level 3: Perluasan Kata & Waktu</h3>
+                            <p class="text-xs text-slate-500">20 Soal • Kata 5 Huruf • <span class="text-amber-600 font-semibold">Timer Hitung Mundur!</span></p>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-slate-400 group-hover:text-sakura-500 group-hover:translate-x-1 transition"></i>
+                </div>
+
+                <!-- Level 4 -->
+                <div onclick="startQuiz(4)" class="glass-card rounded-2xl p-5 flex items-center justify-between hover:border-sakura-400 cursor-pointer transition group">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 rounded-xl bg-purple-100 text-purple-600 font-bold flex items-center justify-center text-lg">
+                            L4
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-slate-800 text-base group-hover:text-sakura-600 transition">Level 4: Variasi Dakuon & Yoon</h3>
+                            <p class="text-xs text-slate-500">25 Soal • Kata 5 Huruf + Dakuon, Yoon • <span class="text-purple-600 font-semibold">Timer Hitung Mundur</span></p>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-slate-400 group-hover:text-sakura-500 group-hover:translate-x-1 transition"></i>
+                </div>
+
+                <!-- Level 5 -->
+                <div onclick="startQuiz(5)" class="glass-card rounded-2xl p-5 flex items-center justify-between hover:border-sakura-400 cursor-pointer transition group">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 rounded-xl bg-rose-100 text-rose-600 font-bold flex items-center justify-center text-lg">
+                            L5
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-slate-800 text-base group-hover:text-sakura-600 transition">Level 5: Master Kosa Kata Kompleks</h3>
+                            <p class="text-xs text-slate-500">35 Soal • Kata Panjang 6-7 Huruf Kompleks • <span class="text-rose-600 font-semibold">Timer Tantangan Tinggi</span></p>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-slate-400 group-hover:text-sakura-500 group-hover:translate-x-1 transition"></i>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 4: KUIS ACTIVE PLAY INTERFACE -->
+        <section id="sec-quiz-play" class="hidden max-w-2xl mx-auto space-y-6">
+            <!-- Top Progress & Timer Bar -->
+            <div class="glass-card rounded-2xl p-4 flex items-center justify-between">
+                <div>
+                    <span id="quiz-level-indicator" class="text-xs font-bold text-sakura-600 uppercase tracking-wider block">LEVEL 1</span>
+                    <span id="quiz-question-counter" class="text-sm font-semibold text-slate-700">Soal 1 dari 10</span>
+                </div>
+
+                <!-- Timer Counter (Only Level 3+) -->
+                <div id="quiz-timer-box" class="hidden flex items-center space-x-2 bg-rose-100 text-rose-600 px-3 py-1.5 rounded-xl font-bold text-sm">
+                    <i class="fa-solid fa-stopwatch animate-pulse"></i>
+                    <span id="quiz-timer-text">00:30</span>
+                </div>
+            </div>
+
+            <!-- Main Question Card -->
+            <div class="glass-card rounded-3xl p-6 sm:p-8 text-center space-y-6 shadow-xl border border-sakura-300/60">
+                <span class="text-xs font-semibold text-slate-400 uppercase tracking-widest block" id="quiz-direction-label">Tebak Cara Baca / Arti:</span>
+
+                <!-- Displayed Japanese Word / Prompt -->
+                <div class="py-4">
+                    <h1 id="quiz-question-prompt" class="font-jp text-5xl sm:text-6xl font-bold text-slate-800 tracking-wider">
+                        さくら
+                    </h1>
+                </div>
+
+                <!-- 4 Option Buttons Grid -->
+                <div id="quiz-options-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                    <!-- Dynamic Buttons -->
+                </div>
+            </div>
+
+            <!-- Navigation Action Buttons -->
+            <div class="flex justify-between items-center pt-2">
+                <button onclick="confirmExitQuiz()" class="text-xs font-semibold text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-xmark mr-1"></i> Keluar Ujian
+                </button>
+                <button id="btn-submit-quiz" onclick="finishQuiz()" class="btn-sakura text-white px-6 py-2.5 rounded-xl font-semibold text-sm shadow">
+                    Konfirmasi Selesaikan Jawaban <i class="fa-solid fa-check ml-1"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- SECTION 5: SCORE REPORT & PEMBAHASAN SOAL -->
+        <section id="sec-quiz-report" class="hidden max-w-3xl mx-auto space-y-6">
+            <!-- Score Overview Banner -->
+            <div class="glass-card rounded-3xl p-6 sm:p-8 text-center space-y-4 relative overflow-hidden">
+                <div class="inline-block px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-sakura-100 text-sakura-600" id="report-type-badge">
+                    HASIL KUIS HIRAGANA - LEVEL 1
+                </div>
+
+                <div class="space-y-1">
+                    <h2 class="text-3xl font-bold text-slate-800">Laporan Hasil Ujian</h2>
+                    <p id="report-message" class="text-xs sm:text-sm text-slate-600">Kerja bagus! Terus tingkatkan latihan Anda!</p>
+                </div>
+
+                <!-- Final Score Circle Display -->
+                <div class="w-32 h-32 mx-auto rounded-full bg-gradient-to-tr from-sakura-400 to-sakura-200 p-2 shadow-xl flex items-center justify-center my-2">
+                    <div class="w-full h-full bg-white rounded-full flex flex-col items-center justify-center">
+                        <span id="report-score-number" class="text-4xl font-extrabold text-sakura-600">80</span>
+                        <span class="text-[10px] font-bold text-slate-400 uppercase">SKOR TOTAL</span>
+                    </div>
+                </div>
+
+                <!-- Stats Summary Row -->
+                <div class="grid grid-cols-3 gap-2 max-w-sm mx-auto pt-2 text-center">
+                    <div class="bg-emerald-50 rounded-xl p-2 border border-emerald-200">
+                        <span class="text-[10px] text-emerald-600 font-bold block">BENAR</span>
+                        <span id="report-count-correct" class="text-lg font-bold text-emerald-700">8</span>
+                    </div>
+                    <div class="bg-rose-50 rounded-xl p-2 border border-rose-200">
+                        <span class="text-[10px] text-rose-600 font-bold block">SALAH</span>
+                        <span id="report-count-wrong" class="text-lg font-bold text-rose-700">2</span>
+                    </div>
+                    <div class="bg-indigo-50 rounded-xl p-2 border border-indigo-200">
+                        <span class="text-[10px] text-indigo-600 font-bold block">AKURASI</span>
+                        <span id="report-accuracy" class="text-lg font-bold text-indigo-700">80%</span>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="pt-4 flex flex-wrap gap-3 justify-center">
+                    <button onclick="retryCurrentQuiz()" class="btn-sakura text-white px-5 py-2.5 rounded-xl text-xs font-semibold flex items-center">
+                        <i class="fa-solid fa-rotate-right mr-2"></i> Coba Lagi (Soal Baru)
+                    </button>
+                    <button onclick="showSection('dashboard')" class="bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 px-5 py-2.5 rounded-xl text-xs font-semibold transition flex items-center">
+                        <i class="fa-solid fa-house mr-2"></i> Kembali ke Dashboard
+                    </button>
+                </div>
+            </div>
+
+            <!-- Detailed Question Breakdown / Sensei Review List -->
+            <div class="space-y-3">
+                <h3 class="font-bold text-lg text-slate-800 flex items-center">
+                    <i class="fa-solid fa-list-check text-sakura-500 mr-2"></i> Pembahasan Soal
+                </h3>
+
+                <div id="report-review-list" class="space-y-3">
+                    <!-- Dynamically Generated Questions & Explanations -->
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        /* ==========================================================================
+           1. DATA STRUCTURES & DATABASE (HIRAGANA, KATAKANA, & VOCABULARY)
+           ========================================================================== */
+
+        // Hiragana Seion (46 Huruf Utama)
+        const HIRAGANA_SEION = [
+            { char: 'あ', romaji: 'a', desc: 'Huruf vokal A dasar.', ex: [{jp:'あり (ari)', id:'Semut'}, {jp:'あさ (asa)', id:'Pagi'}] },
+            { char: 'い', romaji: 'i', desc: 'Huruf vokal I dasar.', ex: [{jp:'いぬ (inu)', id:'Anjing'}, {jp:'いち (ichi)', id:'Satu'}] },
+            { char: 'う', romaji: 'u', desc: 'Huruf vokal U dasar.', ex: [{jp:'うみ (umi)', id:'Laut'}, {jp:'うた (uta)', id:'Lagu'}] },
+            { char: 'え', romaji: 'e', desc: 'Huruf vokal E dasar.', ex: [{jp:'えき (eki)', id:'Stasiun'}, {jp:'えん (en)', id:'Yen'}] },
+            { char: 'お', romaji: 'o', desc: 'Huruf vokal O dasar.', ex: [{jp:'おと (oto)', id:'Suara'}, {jp:'God (kami)', id:'Tuhan'}] },
+            { char: 'か', romaji: 'ka', desc: 'Konsonan K + Vokal A', ex: [{jp:'かさ (kasa)', id:'Payung'}, {jp:'川 (kawa)', id:'Sungai'}] },
+            { char: 'き', romaji: 'ki', desc: 'Konsonan K + Vokal I', ex: [{jp:'き (ki)', id:'Pohon'}, {jp:'きく (kiku)', id:'Mendengar'}] },
+            { char: 'く', romaji: 'ku', desc: 'Konsonan K + Vokal U', ex: [{jp:'くつ (kutsu)', id:'Sepatu'}, {jp:'くも (kumo)', id:'Awan'}] },
+            { char: 'け', romaji: 'ke', desc: 'Konsonan K + Vokal E', ex: [{jp:'けいさつ (keisatsu)', id:'Polisi'}] },
+            { char: 'こ', romaji: 'ko', desc: 'Konsonan K + Vokal O', ex: [{jp:'こども (kodomo)', id:'Anak-anak'}] },
+            { char: 'さ', romaji: 'sa', desc: 'Baris S', ex: [{jp:'さくら (sakura)', id:'Bunga Sakura'}] },
+            { char: 'し', romaji: 'shi', desc: 'Dibaca SHI (bukan Si)', ex: [{jp:'しか (shika)', id:'Rusa'}] },
+            { char: 'す', romaji: 'su', desc: 'Baris S', ex: [{jp:'すし (sushi)', id:'Sushi'}] },
+            { char: 'せ', romaji: 'se', desc: 'Baris S', ex: [{jp:'せんせい (sensei)', id:'Guru'}] },
+            { char: 'そ', romaji: 'so', desc: 'Baris S', ex: [{jp:'そら (sora)', id:'Langit'}] },
+            { char: 'た', romaji: 'ta', desc: 'Baris T', ex: [{jp:'たまご (tamago)', id:'Telur'}] },
+            { char: 'ち', romaji: 'chi', desc: 'Dibaca CHI (bukan Ti)', ex: [{jp:'ちち (chichi)', id:'Ayah'}] },
+            { char: 'つ', romaji: 'tsu', desc: 'Dibaca TSU (bukan Tu)', ex: [{jp:'つくえ (tsukue)', id:'Meja'}] },
+            { char: 'て', romaji: 'te', desc: 'Baris T', ex: [{jp:'てがみ (tegami)', id:'Surat'}] },
+            { char: 'と', romaji: 'to', desc: 'Baris T', ex: [{jp:'ともだち (tomodachi)', id:'Teman'}] },
+            { char: 'な', romaji: 'na', desc: 'Baris N', ex: [{jp:'夏 (natsu)', id:'Musim Panas'}] },
+            { char: 'に', romaji: 'ni', desc: 'Baris N', ex: [{jp:'にく (niku)', id:'Daging'}] },
+            { char: 'ぬ', romaji: 'nu', desc: 'Baris N', ex: [{jp:'いぬ (inu)', id:'Anjing'}] },
+            { char: 'ね', romaji: 'ne', desc: 'Baris N', ex: [{jp:'ねこ (neko)', id:'Kucing'}] },
+            { char: 'の', romaji: 'no', desc: 'Baris N', ex: [{jp:'のり (nori)', id:'Rumput Laut'}] },
+            { char: 'は', romaji: 'ha', desc: 'Baris H (bisa dibaca WA sebagai partikel)', ex: [{jp:'はな (hana)', id:'Bunga / Hidung'}] },
+            { char: 'ひ', romaji: 'hi', desc: 'Baris H', ex: [{jp:'ひかり (hikari)', id:'Cahaya'}] },
+            { char: 'ふ', romaji: 'fu', desc: 'Dibaca FU (lembut)', ex: [{jp:'ふね (fune)', id:'Kapal'}] },
+            { char: 'へ', romaji: 'he', desc: 'Baris H (dibaca E sebagai partikel arah)', ex: [{jp:'へや (heya)', id:'Kamar'}] },
+            { char: 'ほ', romaji: 'ho', desc: 'Baris H', ex: [{jp:'ほし (hoshi)', id:'Bintang'}] },
+            { char: 'ま', romaji: 'ma', desc: 'Baris M', ex: [{jp:'まち (machi)', id:'Kota'}] },
+            { char: 'み', romaji: 'mi', desc: 'Baris M', ex: [{jp:'みず (mizu)', id:'Air'}] },
+            { char: 'む', romaji: 'mu', desc: 'Baris M', ex: [{jp:'むし (mushi)', id:'Serangga'}] },
+            { char: 'め', romaji: 'me', desc: 'Baris M', ex: [{jp:'め (me)', id:'Mata'}] },
+            { char: 'も', romaji: 'mo', desc: 'Baris M', ex: [{jp:'もも (momo)', id:'Mangga/Persik'}] },
+            { char: 'や', romaji: 'ya', desc: 'Semivokal Y', ex: [{jp:'やま (yama)', id:'Gunung'}] },
+            { char: 'ゆ', romaji: 'yu', desc: 'Semivokal Y', ex: [{jp:'ゆき (yuki)', id:'Salju'}] },
+            { char: 'よ', romaji: 'yo', desc: 'Semivokal Y', ex: [{jp:'よる (yoru)', id:'Malam'}] },
+            { char: 'ら', romaji: 'ra', desc: 'Baris R (sentuhan lidah mirip L/R)', ex: [{jp:'らいげつ (raigetsu)', id:'Bulan Depan'}] },
+            { char: 'り', romaji: 'ri', desc: 'Baris R', ex: [{jp:'りんご (ringo)', id:'Apel'}] },
+            { char: 'る', romaji: 'ru', desc: 'Baris R', ex: [{jp:'くるま (kuruma)', id:'Mobil'}] },
+            { char: 'れ', romaji: 're', desc: 'Baris R', ex: [{jp:'れきし (rekishi)', id:'Sejarah'}] },
+            { char: 'ろ', romaji: 'ro', desc: 'Baris R', ex: [{jp:'ろうそく (rousoku)', id:'Lilin'}] },
+            { char: 'わ', romaji: 'wa', desc: 'Vokal WA', ex: [{jp:'わたし (watashi)', id:'Saya'}] },
+            { char: 'を', romaji: 'wo', desc: 'Dibaca O (khusus Partikel Objek)', ex: [{jp:'ほんをよむ (hon o yomu)', id:'Membaca buku'}] },
+            { char: 'ん', romaji: 'n', desc: 'Konsonan N penutup', ex: [{jp:'ほん (hon)', id:'Buku'}] },
+        ];
+
+        // Hiragana Dakuon & Handakuon
+        const HIRAGANA_DAKUON = [
+            { char: 'が', romaji: 'ga', desc: 'Baris G (K + Tenten " )' },
+            { char: 'ぎ', romaji: 'gi', desc: 'Baris G' },
+            { char: 'ぐ', romaji: 'gu', desc: 'Baris G' },
+            { char: 'げ', romaji: 'ge', desc: 'Baris G' },
+            { char: 'ご', romaji: 'go', desc: 'Baris G' },
+            { char: 'ざ', romaji: 'za', desc: 'Baris Z (S + Tenten " )' },
+            { char: 'じ', romaji: 'ji', desc: 'Dibaca JI' },
+            { char: 'ず', romaji: 'zu', desc: 'Baris Z' },
+            { char: 'ぜ', romaji: 'ze', desc: 'Baris Z' },
+            { char: 'ぞ', romaji: 'zo', desc: 'Baris Z' },
+            { char: 'だ', romaji: 'da', desc: 'Baris D (T + Tenten " )' },
+            { char: 'ぢ', romaji: 'ji', desc: 'Dibaca JI (jarang dipakai)' },
+            { char: 'づ', romaji: 'zu', desc: 'Dibaca ZU (jarang dipakai)' },
+            { char: 'で', romaji: 'de', desc: 'Baris D' },
+            { char: 'ど', romaji: 'do', desc: 'Baris D' },
+            { char: 'ば', romaji: 'ba', desc: 'Baris B (H + Tenten " )' },
+            { char: 'び', romaji: 'bi', desc: 'Baris B' },
+            { char: 'ぶ', romaji: 'bu', desc: 'Baris B' },
+            { char: 'べ', romaji: 'be', desc: 'Baris B' },
+            { char: 'ぼ', romaji: 'bo', desc: 'Baris B' },
+            { char: 'ぱ', romaji: 'pa', desc: 'Baris P (H + Maru ° )' },
+            { char: 'ぴ', romaji: 'pi', desc: 'Baris P' },
+            { char: 'ぷ', romaji: 'pu', desc: 'Baris P' },
+            { char: 'ぺ', romaji: 'pe', desc: 'Baris P' },
+            { char: 'ぽ', romaji: 'po', desc: 'Baris P' },
+        ];
+
+        // Hiragana Yoon (Gabungan ya, yu, yo kecil)
+        const HIRAGANA_YOON = [
+            { char: 'きゃ', romaji: 'kya' }, { char: 'きゅ', romaji: 'kyu' }, { char: 'きょ', romaji: 'kyo' },
+            { char: 'しゃ', romaji: 'sha' }, { char: 'しゅ', romaji: 'shu' }, { char: 'しょ', romaji: 'sho' },
+            { char: 'ちゃ', romaji: 'cha' }, { char: 'ちゅ', romaji: 'chu' }, { char: 'ちょ', romaji: 'cho' },
+            { char: 'にゃ', romaji: 'nya' }, { char: 'にゅ', romaji: 'nyu' }, { char: 'にょ', romaji: 'nyo' },
+            { char: 'ひゃ', romaji: 'hya' }, { char: 'ひゅ', romaji: 'hyu' }, { char: 'ひょ', romaji: 'hyo' },
+            { char: 'みゃ', romaji: 'mya' }, { char: 'みゅ', romaji: 'myu' }, { char: 'みょ', romaji: 'myo' },
+            { char: 'りゃ', romaji: 'rya' }, { char: 'りゅ', romaji: 'ryu' }, { char: 'りょ', romaji: 'ryo' },
+            { char: 'ぎゃ', romaji: 'gya' }, { char: 'ぎゅ', romaji: 'gyu' }, { char: 'ぎょ', romaji: 'gyo' },
+            { char: 'じゃ', romaji: 'ja' },  { char: 'じゅ', romaji: 'ju' },  { char: 'じょ', romaji: 'jo' },
+            { char: 'びゃ', romaji: 'bya' }, { char: 'びゅ', romaji: 'byu' }, { char: 'びょ', romaji: 'byo' },
+            { char: 'ぴゃ', romaji: 'pya' }, { char: 'ぴゅ', romaji: 'pyu' }, { char: 'ぴょ', romaji: 'pyo' }
+        ];
+
+        // Katakana Data Array (Seion, Dakuon, Yoon Mirrored)
+        const KATAKANA_SEION = [
+            { char: 'ア', romaji: 'a', desc: 'Katakana A' }, { char: 'イ', romaji: 'i', desc: 'Katakana I' },
+            { char: 'ウ', romaji: 'u', desc: 'Katakana U' }, { char: 'エ', romaji: 'e', desc: 'Katakana E' },
+            { char: 'オ', romaji: 'o', desc: 'Katakana O' }, { char: 'カ', romaji: 'ka', desc: 'Katakana KA' },
+            { char: 'キ', romaji: 'ki', desc: 'Katakana KI' }, { char: 'ク', romaji: 'ku', desc: 'Katakana KU' },
+            { char: 'ケ', romaji: 'ke', desc: 'Katakana KE' }, { char: 'コ', romaji: 'ko', desc: 'Katakana KO' },
+            { char: 'サ', romaji: 'sa', desc: 'Katakana SA' }, { char: 'シ', romaji: 'shi', desc: 'Katakana SHI' },
+            { char: 'ス', romaji: 'su', desc: 'Katakana SU' }, { char: 'セ', romaji: 'se', desc: 'Katakana SE' },
+            { char: 'ソ', romaji: 'so', desc: 'Katakana SO' }, { char: 'タ', romaji: 'ta', desc: 'Katakana TA' },
+            { char: 'チ', romaji: 'chi', desc: 'Katakana CHI' }, { char: 'ツ', romaji: 'tsu', desc: 'Katakana TSU' },
+            { char: 'テ', romaji: 'te', desc: 'Katakana TE' }, { char: 'ト', romaji: 'to', desc: 'Katakana TO' },
+            { char: 'ナ', romaji: 'na', desc: 'Katakana NA' }, { char: 'ニ', romaji: 'ni', desc: 'Katakana NI' },
+            { char: 'ヌ', romaji: 'nu', desc: 'Katakana NU' }, { char: 'ネ', romaji: 'ne', desc: 'Katakana NE' },
+            { char: 'ノ', romaji: 'no', desc: 'Katakana NO' }, { char: 'ハ', romaji: 'ha', desc: 'Katakana HA' },
+            { char: 'ヒ', romaji: 'hi', desc: 'Katakana HI' }, { char: 'フ', romaji: 'fu', desc: 'Katakana FU' },
+            { char: 'ヘ', romaji: 'he', desc: 'Katakana HE' }, { char: 'ホ', romaji: 'ho', desc: 'Katakana HO' },
+            { char: 'マ', romaji: 'ma', desc: 'Katakana MA' }, { char: 'ミ', romaji: 'mi', desc: 'Katakana MI' },
+            { char: 'ム', romaji: 'mu', desc: 'Katakana MU' }, { char: 'メ', romaji: 'me', desc: 'Katakana ME' },
+            { char: 'モ', romaji: 'mo', desc: 'Katakana MO' }, { char: 'ヤ', romaji: 'ya', desc: 'Katakana YA' },
+            { char: 'ユ', romaji: 'yu', desc: 'Katakana YU' }, { char: 'ヨ', romaji: 'yo', desc: 'Katakana YO' },
+            { char: 'ラ', romaji: 'ra', desc: 'Katakana RA' }, { char: 'リ', romaji: 'ri', desc: 'Katakana RI' },
+            { char: 'ル', romaji: 'ru', desc: 'Katakana RU' }, { char: 'レ', romaji: 're', desc: 'Katakana RE' },
+            { char: 'ロ', romaji: 'ro', desc: 'Katakana RO' }, { char: 'ワ', romaji: 'wa', desc: 'Katakana WA' },
+            { char: 'ヲ', romaji: 'wo', desc: 'Katakana WO' }, { char: 'ン', romaji: 'n', desc: 'Katakana N' },
+        ];
+
+        /* ==========================================================================
+           2. QUIZ VOCABULARY BANK (PATTERNS & LEVELS)
+           ========================================================================== */
+
+        const QUIZ_BANK = {
+            hiragana: {
+                level1: [ // 1 Huruf
+                    { jp: 'あ', id: 'A', options: ['A', 'I', 'U', 'E'] },
+                    { jp: 'い', id: 'I', options: ['E', 'I', 'O', 'A'] },
+                    { jp: 'か', id: 'KA', options: ['SA', 'KA', 'TA', 'NA'] },
+                    { jp: 'き', id: 'KI', options: ['HI', 'MI', 'KI', 'CHI'] },
+                    { jp: 'す', id: 'SU', options: ['SU', 'TSU', 'NU', 'KU'] },
+                    { jp: 'ね', id: 'NE', options: ['RE', 'ME', 'NE', 'NU'] },
+                    { jp: 'は', id: 'HA', options: ['HO', 'HA', 'MA', 'KE'] },
+                    { jp: 'ま', id: 'MA', options: ['MO', 'HA', 'HO', 'MA'] },
+                    { jp: 'り', id: 'RI', options: ['I', 'RI', 'KO', 'IN'] },
+                    { jp: 'ん', id: 'N', options: ['SO', 'N', 'NO', 'MO'] },
+                    { jp: 'さ', id: 'SA', options: ['SA', 'CHI', 'KI', 'SO'] },
+                    { jp: 'た', id: 'TA', options: ['NI', 'KO', 'TA', 'HA'] },
+                ],
+                level2: [ // 3 Huruf
+                    { jp: 'さくら', id: 'sakura', options: ['sakura', 'sakana', 'suzuki', 'sumire'] },
+                    { jp: 'たまご', id: 'tamago', options: ['tamago', 'tanaka', 'taberu', 'takoyaki'] },
+                    { jp: 'くるま', id: 'kuruma', options: ['kodomo', 'kuruma', 'kokoro', 'kimono'] },
+                    { jp: 'わたし', id: 'watashi', options: ['watashi', 'warui', 'wasabi', 'wani'] },
+                    { jp: 'あたま', id: 'atama', options: ['anata', 'atama', 'ashita', 'akare'] },
+                    { jp: 'さかな', id: 'sakana', options: ['sakura', 'sakana', 'sukiyaki', 'satou'] },
+                    { jp: 'こころ', id: 'kokoro', options: ['kodomo', 'kuruma', 'kokoro', 'kotoba'] },
+                    { jp: 'くすり', id: 'kusuri', options: ['kusuri', 'kudamono', 'kumo', 'kuma'] },
+                    { jp: 'ひかり', id: 'hikari', options: ['hikari', 'hibiki', 'hitotsu', 'fukui'] },
+                    { jp: 'すいか', id: 'suika', options: ['suika', 'sushi', 'sumo', 'sora'] },
+                    { jp: 'かさな', id: 'kasana', options: ['kasana', 'katana', 'kamera', 'karate'] },
+                    { jp: 'やまま', id: 'yamama', options: ['yamada', 'yama', 'yamama', 'yukata'] },
+                    { jp: 'おとこ', id: 'otoko', options: ['onna', 'otoko', 'otou', 'otani'] },
+                    { jp: 'けいさ', id: 'keisa', options: ['keisatsu', 'keisa', 'keitai', 'keiko'] },
+                    { jp: 'あした', id: 'ashita', options: ['ashita', 'asatte', 'anata', 'akita'] },
+                ],
+                level3: [ // 5 Huruf + Timer
+                    { jp: 'あさごはん', id: 'asagohan', options: ['asagohan', 'hirugohan', 'bangohan', 'otousan'] },
+                    { jp: 'おもしろい', id: 'omoshiroi', options: ['subarashii', 'omoshiroi', 'otanoshemi', 'oishii'] },
+                    { jp: 'あたたかい', id: 'atatakai', options: ['atatakai', 'tsumetai', 'subarashii', 'arasuji'] },
+                    { jp: 'ともだち', id: 'tomodachi', options: ['tomodachi', 'tanoshimi', 'otousan', 'okaan'] },
+                    { jp: 'たのしい', id: 'tanoshii', options: ['tanoshii', 'utsukushii', 'yoshi', 'omoshiroi'] },
+                    { jp: 'むずかしい', id: 'muzukashii', options: ['muzukashii', 'yasashii', 'tanoshii', 'omoshiroi'] },
+                    { jp: 'あたらしい', id: 'atarashii', options: ['atarashii', 'furui', 'utsukushii', 'takai'] },
+                    { jp: 'すばらしい', id: 'subarashii', options: ['subarashii', 'omoshiroi', 'kawaii', 'kakkoii'] },
+                    { jp: 'おとうさん', id: 'otousan', options: ['okasan', 'otousan', 'oniisan', 'oneesan'] },
+                    { jp: 'おかあさん', id: 'okaasan', options: ['okaasan', 'otousan', 'obaasan', 'ojiisan'] },
+                    { jp: 'おにいさん', id: 'oniisan', options: ['oniisan', 'oneesan', 'otouto', 'imouto'] },
+                    { jp: 'おねえさん', id: 'oneesan', options: ['oneesan', 'oniisan', 'imouto', 'otouto'] },
+                    { jp: 'おとうと', id: 'otouto', options: ['otouto', 'imouto', 'oniisan', 'oneesan'] },
+                    { jp: 'いもうと', id: 'imouto', options: ['imouto', 'otouto', 'oneesan', 'oniisan'] },
+                    { jp: 'たんじょう', id: 'tanjou', options: ['tanjoubi', 'tanjou', 'tanoshimi', 'tataru'] },
+                    { jp: 'よろしく', id: 'yoroshiku', options: ['yoroshiku', 'arigatou', 'sumimasen', 'ohayou'] },
+                    { jp: 'ありがとう', id: 'arigatou', options: ['arigatou', 'sumimasen', 'gomenne', 'sayounara'] },
+                    { jp: 'すみません', id: 'sumimasen', options: ['sumimasen', 'arigatou', 'shitsurei', 'konnichiwa'] },
+                    { jp: 'さようなら', id: 'sayounara', options: ['sayounara', 'matane', 'konbanwa', 'oyasumi'] },
+                    { jp: 'おやすみな', id: 'oyasumina', options: ['oyasumi', 'oyasumina', 'ohayou', 'konnichiwa'] },
+                ],
+                level4: [ // Dakuon, Yoon 5 Huruf
+                    { jp: 'とうきょう', id: 'toukyou', options: ['toukyou', 'kyouto', 'osaka', 'nagoya'] },
+                    { jp: 'じゅうどう', id: 'juudou', options: ['karate', 'juudou', 'kendo', 'sumo'] },
+                    { jp: 'びょういん', id: 'byouin', options: ['byouin', 'biyaoin', 'b美容院', 'ginou'] },
+                    { jp: 'しょうがっ', id: 'shouga', options: ['shouga', 'shougakkou', 'daigaku', 'koukou'] },
+                    { jp: 'べんきょう', id: 'benkyou', options: ['benkyou', 'shukudai', 'renshuu', 'shiken'] },
+                    { jp: 'じょうず', id: 'jouzu', options: ['jouzu', 'heta', 'suki', 'kirai'] },
+                    { jp: 'りょこう', id: 'ryokou', options: ['ryokou', 'shoutai', 'kankou', 'sanpo'] },
+                    { jp: 'しゃしん', id: 'shashin', options: ['shashin', 'kamera', 'eiga', 'manga'] },
+                    { jp: 'じどうしゃ', id: 'jidousha', options: ['jidousha', 'densha', 'hikouki', 'fune'] },
+                    { jp: 'ひこうき', id: 'hikouki', options: ['hikouki', 'jidousha', 'densha', 'jitensha'] },
+                    { jp: 'じてんしゃ', id: 'jitensha', options: ['jitensha', 'autobai', 'basu', 'takushii'] },
+                    { jp: 'ちゅうしゃ', id: 'chuusha', options: ['chuusha', 'kusuri', 'byouin', 'shujutsu'] },
+                    { jp: 'かんこく', id: 'kankoku', options: ['kankoku', 'nihon', 'chuugoku', 'amerika'] },
+                    { jp: 'ちゅうごく', id: 'chuugoku', options: ['chuugoku', 'kankoku', 'eikoku', 'taikoku'] },
+                    { jp: 'ぎゅうにゅ', id: 'gyuunyu', options: ['gyuunyuu', 'gyuunyu', 'mizu', 'ocha'] },
+                    { jp: 'おちゃ', id: 'ocha', options: ['ocha', 'kocha', 'juusu', 'biiru'] },
+                    { jp: 'しょうゆ', id: 'shouyu', options: ['shouyu', 'mirin', 'sake', 'miso'] },
+                    { jp: 'にんぎょう', id: 'ningyou', options: ['ningyou', 'doushi', 'meishi', 'keiyoushi'] },
+                    { jp: 'けっこん', id: 'kekkon', options: ['kekkon', 'renai', 'shigoto', 'kazoku'] },
+                    { jp: 'しゅくだい', id: 'shukudai', options: ['shukudai', 'benkyou', 'shiken', 'jugyou'] },
+                    { jp: 'じゅぎょう', id: 'jugyou', options: ['jugyou', 'shukudai', 'gakkou', 'sensei'] },
+                    { jp: 'がくせい', id: 'gakusei', options: ['gakusei', 'sensei', 'isya', 'kaijin'] },
+                    { jp: 'かいしゃい', id: 'kaishai', options: ['kaishain', 'kaishai', 'bank', 'isya'] },
+                    { jp: 'いしゃ', id: 'isha', options: ['isha', 'kanagoshi', 'bengoshi', 'keisatsu'] },
+                    { jp: 'ぎんこうい', id: 'ginkoui', options: ['ginkouin', 'ginkoui', 'kaishain', 'tenin'] },
+                ],
+                level5: [ // 6-7 Huruf Kompleks
+                    { jp: 'しんかんせん', id: 'shinkansen', options: ['shinkansen', 'tokkyuuchuu', 'chikatetsu', 'densha'] },
+                    { jp: 'おめでとうございます', id: 'omedetougozaimasu', options: ['omedetougozaimasu', 'arigatougozaimasu', 'shitsureiitashimasu', 'irasshaimase'] },
+                    { jp: 'ありがとうございます', id: 'arigatougozaimasu', options: ['arigatougozaimasu', 'omedetougozaimasu', 'itadakimasu', 'gochisosama'] },
+                    { jp: 'いただきます', id: 'itadakimasu', options: ['itadakimasu', 'gochisosama', 'irasshaimase', 'okaerinasai'] },
+                    { jp: 'ごちそうさまでした', id: 'gochisousamadeshita', options: ['gochisousamadeshita', 'itadakimasu', 'shitsureishimasu', 'osakani'] },
+                    { jp: 'いってらっしゃい', id: 'itterasshai', options: ['itterasshai', 'ittekimasu', 'tadaima', 'okaerinasai'] },
+                    { jp: 'いってきます', id: 'ittekimasu', options: ['ittekimasu', 'itterasshai', 'tadaima', 'okaerinasai'] },
+                    { jp: 'おかえりなさい', id: 'okaerinasai', options: ['okaerinasai', 'tadaima', 'itterasshai', 'ittekimasu'] },
+                    { jp: 'はじめまして', id: 'hajimemashite', options: ['hajimemashite', 'yoroshiku', 'ohayou', 'konbanwa'] },
+                    { jp: 'よろしくおねがいします', id: 'yoroshikuonegaishimasu', options: ['yoroshikuonegaishimasu', 'arigatougozaimasu', 'gomenmasen', 'sumimasen'] },
+                    { jp: 'しつれいします', id: 'shitsureishimasu', options: ['shitsureishimasu', 'sumimasen', 'gomenne', 'otanoshemi'] },
+                    { jp: 'おだいじに', id: 'odaijini', options: ['odaijini', 'kiotsukete', 'ganbatte', 'moshimoshi'] },
+                    { jp: 'きをつけて', id: 'kiotsukete', options: ['kiotsukete', 'odaijini', 'ganbatte', 'yoroshiku'] },
+                    { jp: 'がんばってください', id: 'ganbattekudasai', options: ['ganbattekudasai', 'kiotsukete', 'odaijini', 'arigatou'] },
+                    { jp: 'たんじょうびおめでとう', id: 'tanjoubiomedetou', options: ['tanjoubiomedetou', 'akemashiteomedetou', 'omedetougozaimasu', 'yoiotoshiwo'] },
+                    { jp: 'あけましておめでとう', id: 'akemashiteomedetou', options: ['akemashiteomedetou', 'tanjoubiomedetou', 'merikurisumasu', 'yoiotoshiwo'] },
+                    { jp: 'どういたしまして', id: 'douitashimashite', options: ['douitashimashite', 'kochiraakoso', 'iie', 'daidjoubu'] },
+                    { jp: 'こちらこそ', id: 'kochirakoso', options: ['kochirakoso', 'douitashimashite', 'osakani', 'moshimoshi'] },
+                    { jp: 'おさきにしつれいします', id: 'osakanishitsureishimasu', options: ['osakanishitsureishimasu', 'otsukaresamadeshita', 'gokurousama', 'mataashita'] },
+                    { jp: 'おつかれさまでした', id: 'otsukaresamadeshita', options: ['otsukaresamadeshita', 'osakanishitsurei', 'gokurousama', 'mataashita'] },
+                    { jp: 'またあしたあいましょう', id: 'mataashitaaimashou', options: ['mataashitaaimashou', 'mataraishuu', 'matakondo', 'sayounara'] },
+                    { jp: 'にほんごがはなせます', id: 'nihongogahanasemasu', options: ['nihongogahanasemasu', 'eigogawakarimasu', 'nihonukita', 'bengkyouka'] },
+                    { jp: 'えいごがわかりますか', id: 'eigogawakarimasuka', options: ['eigogawakarimasuka', 'nihongogahanasemasu', 'onamaewanani', 'dokokara'] },
+                    { jp: 'おなまえはなんですか', id: 'onamaewanandesuka', options: ['onamaewanandesuka', 'dokoikimasuka', 'ikura-desuka', 'nanjidesuka'] },
+                    { jp: 'どこからきましたか', id: 'dokokarakimashitaka', options: ['dokokarakimashitaka', 'dokoikimasuka', 'dokosumimasu', 'nanjidesuka'] },
+                    { jp: 'いまなんじですか', id: 'imananjidesuka', options: ['imananjidesuka', 'ikuradesuka', 'nanseidesuka', 'dokoikimasuka'] },
+                    { jp: 'これはいくらですか', id: 'korewaikuradesuka', options: ['korewaikuradesuka', 'korewanandesuka', 'dokoikimasuka', 'dorenisuru'] },
+                    { jp: 'トイレはどこですか', id: 'toirewadokodesuka', options: ['toirewadokodesuka', 'ekiwa-dokodesuka', 'koko-doko', 'asokodesu'] },
+                    { jp: 'えきはどこですか', id: 'ekiwadokodesuka', options: ['ekiwadokodesuka', 'toirewadokodesuka', 'machiwa-doko', 'dokokara'] },
+                    { jp: 'しゃしんを撮ってもいいですか', id: 'shashinwotottemoii', options: ['shashinwotottemoii', 'korewokudatai', 'mizuwokudasai', 'mido-kudasai'] },
+                    { jp: 'みずをください', id: 'mizuwokudasai', options: ['mizuwokudasai', 'ochawokudasai', 'o-kaikei', 'menu-kudasai'] },
+                    { jp: 'メニューをください', id: 'menuwokudasai', options: ['menuwokudasai', 'mizuwokudasai', 'kaikeiwokudasai', 'chuumon'] },
+                    { jp: 'お会計をお願いします', id: 'okaikeiwoonegaishimasu', options: ['okaikeiwoonegaishimasu', 'menuwokudasai', 'mizuwokudasai', 'chuumon'] },
+                    { jp: 'だいじょうぶです', id: 'daijoubudesu', options: ['daijoubudesu', 'kekkoudesu', 'wakarimashita', 'shirimasen'] },
+                    { jp: 'わかりました', id: 'wakarimashita', options: ['wakarimashita', 'wakarimasen', 'shirimasen', 'soudesu'] },
+                ]
+            },
+            katakana: {
+                level1: [
+                    { jp: 'ア', id: 'A', options: ['A', 'I', 'U', 'E'] },
+                    { jp: 'カ', id: 'KA', options: ['SA', 'KA', 'TA', 'NA'] },
+                    { jp: 'サ', id: 'SA', options: ['SA', 'SHI', 'SU', 'SE'] },
+                    { jp: 'タ', id: 'TA', options: ['CHI', 'TSU', 'TA', 'TE'] },
+                    { jp: 'ナ', id: 'NA', options: ['NI', 'NU', 'NA', 'NE'] },
+                    { jp: 'ハ', id: 'HA', options: ['HI', 'FU', 'HE', 'HA'] },
+                    { jp: 'マ', id: 'MA', options: ['MI', 'MA', 'MU', 'ME'] },
+                    { jp: 'ヤ', id: 'YA', options: ['YU', 'YO', 'YA', 'WA'] },
+                    { jp: 'ラ', id: 'RA', options: ['RI', 'RU', 'RE', 'RA'] },
+                    { jp: 'ワ', id: 'WA', options: ['WO', 'N', 'WA', 'RO'] },
+                    { jp: 'ン', id: 'N', options: ['SO', 'N', 'SHI', 'TSU'] },
+                    { jp: 'コ', id: 'KO', options: ['NI', 'KO', 'YU', 'E'] },
+                ],
+                level2: [
+                    { jp: 'カメラ', id: 'kamera', options: ['kamera', 'pasaon', 'sakura', 'manga'] },
+                    { jp: 'バナナ', id: 'banana', options: ['banana', 'rinno', 'mikan', 'melon'] },
+                    { jp: 'バス', id: 'basu', options: ['basu', 'biiru', 'taiya', 'supoon'] },
+                    { jp: 'パン', id: 'pan', options: ['pan', 'pen', 'pin', 'pon'] },
+                    { jp: 'ペン', id: 'pen', options: ['pen', 'pan', 'pin', 'pon'] },
+                    { jp: 'ナイフ', id: 'naifu', options: ['naifu', 'fooku', 'sara', 'fuku'] },
+                    { jp: 'サクラ', id: 'sakura', options: ['sakura', 'kamera', 'tomato', 'mikan'] },
+                    { jp: 'トマト', id: 'tomato', options: ['tomato', 'poteto', 'sara', 'mikan'] },
+                    { jp: 'マイク', id: 'maiku', options: ['maiku', 'kamera', 'manga', 'terebi'] },
+                    { jp: 'ラジオ', id: 'rajio', options: ['rajio', 'terebi', 'pason', 'kamera'] },
+                    { jp: 'テレビ', id: 'terebi', options: ['terebi', 'rajio', 'kamera', 'video'] },
+                    { jp: 'ドア', id: 'doa', options: ['doa', 'mado', 'heya', 'ie'] },
+                    { jp: 'ビル', id: 'biru', options: ['biru', 'biiru', 'ie', 'machi'] },
+                    { jp: 'ノート', id: 'nooto', options: ['nooto', 'pen', 'kam', 'hon'] },
+                    { jp: 'タクシー', id: 'takushii', options: ['takushii', 'basu', 'densha', 'jidousha'] },
+                ],
+                level3: [
+                    { jp: 'パソコン', id: 'pasokon', options: ['pasokon', 'kamera', 'terebi', 'smaho'] },
+                    { jp: 'アメリカ', id: 'amerika', options: ['amerika', 'indo', 'indonesia', 'kanada'] },
+                    { jp: 'インドネシア', id: 'indonesia', options: ['indonesia', 'malesia', 'thailand', 'singapore'] },
+                    { jp: 'マレーシア', id: 'mareeshia', options: ['mareeshia', 'indonesia', 'vietnam', 'philippine'] },
+                    { jp: 'フィリピン', id: 'firipin', options: ['firipin', 'singapore', 'thailand', 'taiwan'] },
+                    { jp: 'シンガポール', id: 'shingapooru', options: ['shingapooru', 'indonesia', 'malesia', 'brunei'] },
+                    { jp: 'タイ', id: 'tai', options: ['tai', 'laos', 'vietnam', 'myanmar'] },
+                    { jp: 'ベトナム', id: 'betonamu', options: ['betonamu', 'thailand', 'kamboja', 'taiwan'] },
+                    { jp: 'イギリス', id: 'igirisu', options: ['igirisu', 'furansu', 'doitsu', 'itala'] },
+                    { jp: 'フランス', id: 'furansu', options: ['furansu', 'igirisu', ' doitsu', 'sepein'] },
+                    { jp: 'ドイツ', id: 'doitsu', options: ['doitsu', 'furansu', 'igirisu', 'pashia'] },
+                    { jp: 'イタリア', id: 'itaria', options: ['itaria', 'sepein', 'furansu', 'girisha'] },
+                    { jp: 'スペイン', id: 'supein', options: ['supein', 'porutogaru', 'itaria', 'furansu'] },
+                    { jp: 'オーストラリア', id: 'oosutoraria', options: ['oosutoraria', 'amerika', 'kanada', 'brazil'] },
+                    { jp: 'ブラジル', id: 'buraziru', options: ['buraziru', 'argentina', 'peru', 'chile'] },
+                    { jp: 'カナダ', id: 'kanada', options: ['kanada', 'amerika', 'mexico', 'cuba'] },
+                    { jp: 'ロシア', id: 'roshia', options: ['roshia', 'china', 'korea', 'mongol'] },
+                    { jp: 'エジプト', id: 'ejiputo', options: ['ejiputo', 'turkey', 'iran', 'iraq'] },
+                    { jp: 'トルコ', id: 'toruko', options: ['toruko', 'ejiputo', 'greece', 'syria'] },
+                    { jp: 'メキシコ', id: 'mekishiko', options: ['mekishiko', 'brazil', 'chile', 'peru'] },
+                ],
+                level4: [
+                    { jp: 'チョコレート', id: 'chokoreeto', options: ['chokoreeto', 'aonisukuriimu', 'keeki', 'puding'] },
+                    { jp: 'アイスクリーム', id: 'aisukuriimu', options: ['aisukuriimu', 'chokoreeto', 'juusu', 'kouri'] },
+                    { jp: 'ハンバーガー', id: 'hanbaagaa', options: ['hanbaagaa', 'paitza', 'suteki', 'sandwich'] },
+                    { jp: 'ピザ', id: 'piza', options: ['piza', 'pasta', 'doria', 'lasagna'] },
+                    { jp: 'スパゲッティ', id: 'supagetti', options: ['supagetti', 'piza', 'ramen', 'soba'] },
+                    { jp: 'サンドイッチ', id: 'sandoitchi', options: ['sandoitchi', 'pan', 'hamburger', 'hotdog'] },
+                    { jp: 'ホットドッグ', id: 'hottodoggu', options: ['hottodoggu', 'sandoitchi', 'hamburger', 'sausage'] },
+                    { jp: 'ソーセージ', id: 'sooseeji', options: ['sooseeji', 'bacon', 'ham', 'meatball'] },
+                    { jp: 'フライドポテト', id: 'furaidopoteto', options: ['furaidopoteto', 'chips', 'potato', 'croquette'] },
+                    { jp: 'サラダ', id: 'sarada', options: ['sarada', 'soup', 'dressing', 'vegetable'] },
+                    { jp: 'スープ', id: 'suupu', options: ['suupu', 'miso', 'curry', 'stew'] },
+                    { jp: 'カレー', id: 'karee', options: ['karee', 'stew', 'soup', 'ramen'] },
+                    { jp: 'コーヒー', id: 'koohii', options: ['koohii', 'ocha', 'juusu', 'cola'] },
+                    { jp: 'コーラ', id: 'koora', options: ['koora', 'soda', 'cider', 'juice'] },
+                    { jp: 'ジュース', id: 'juusu', options: ['juusu', 'mizu', 'milk', 'tea'] },
+                    { jp: 'ミルク', id: 'miruku', options: ['miruku', 'gyuunyuu', 'butter', 'cheese'] },
+                    { jp: 'チーズ', id: 'chiizu', options: ['chiizu', 'butter', 'yogurt', 'milk'] },
+                    { jp: 'バター', id: 'bataa', options: ['bataa', 'margarine', 'oil', 'cheese'] },
+                    { jp: 'ヨーグルト', id: 'yooguruto', options: ['yooguruto', 'pudding', 'jelly', 'icecream'] },
+                    { jp: 'レストラン', id: 'resutoran', options: ['resutoran', 'kafe', 'bar', 'hotel'] },
+                    { jp: 'カフェ', id: 'kafe', options: ['kafe', 'kissaten', 'restaurant', 'bar'] },
+                    { jp: 'ホテル', id: 'hoteru', options: ['hoteru', 'ryokan', 'mansion', 'apatment'] },
+                    { jp: 'デパート', id: 'depaato', options: ['depaato', 'super', 'mall', 'store'] },
+                    { jp: 'スーパー', id: 'suupaa', options: ['suupaa', 'konbini', 'depaato', 'market'] },
+                    { jp: 'コンビニ', id: 'konbini', options: ['konbini', 'suupaa', 'depaato', 'kiosk'] },
+                ],
+                level5: [
+                    { jp: 'スマートフォン', id: 'sumaatofon', options: ['sumaatofon', 'keitai', 'pasokon', 'taforetto'] },
+                    { jp: 'インターネット', id: 'intaanetto', options: ['intaanetto', 'weibu', 'wi-fi', 'appli'] },
+                    { jp: 'エスカレーター', id: 'esukareetaa', options: ['esukareetaa', 'erebeetaa', 'kaidan', 'michi'] },
+                    { jp: 'エレベーター', id: 'erebeetaa', options: ['erebeetaa', 'esukareetaa', 'lift', 'ropeway'] },
+                    { jp: 'エアコン', id: 'eakon', options: ['eakon', 'senfuuki', 'hiitaa', 'kotatsu'] },
+                    { jp: 'シャンプー', id: 'shanpuu', options: ['shanpuu', 'rinse', 'soap', 'bodywash'] },
+                    { jp: 'リンス', id: 'rinsu', options: ['rinsu', 'shanpuu', 'conditioner', 'treatment'] },
+                    { jp: 'プラスチック', id: 'purasuchikku', options: ['purasuchikku', 'glass', 'metal', 'paper'] },
+                    { jp: 'リサイクル', id: 'risaikuru', options: ['risaikuru', 'gomi', 'eco', 'clean'] },
+                    { jp: 'ボランティア', id: 'borantia', options: ['borantia', 'event', 'club', 'staff'] },
+                    { jp: 'コミュニケーション', id: 'komyunikeeshon', options: ['komyunikeeshon', 'speech', 'talk', 'meeting'] },
+                    { jp: 'プレゼンテーション', id: 'purezenteeshon', options: ['purezenteeshon', 'meeting', 'speech', 'report'] },
+                    { jp: 'スケジュール', id: 'sukejuuru', options: ['sukejuuru', 'plan', 'calendar', 'memo'] },
+                    { jp: 'アルバイト', id: 'arubaito', options: ['arubaito', 'parttime', 'shigoto', 'job'] },
+                    { jp: 'アンケート', id: 'ankeeto', options: ['ankeeto', 'survey', 'test', 'paper'] },
+                    { jp: 'キャンパス', id: 'kyanpasu', options: ['kyanpasu', 'gakkou', 'daigaku', 'ground'] },
+                    { jp: 'インタビュー', id: 'intabyuu', options: ['intabyuu', 'talk', 'news', 'report'] },
+                    { jp: 'アナウンサー', id: 'anaunsaa', options: ['anaunsaa', 'reporter', 'caster', 'mc'] },
+                    { jp: 'エンジニア', id: 'enjinika', options: ['enjinika', 'programmer', 'designer', 'doctor'] },
+                    { jp: 'プログラマー', id: 'puroguramaa', options: ['puroguramaa', 'engineer', 'coder', 'hacker'] },
+                    { jp: 'デザイナー', id: 'dezainaa', options: ['dezainaa', 'artist', 'creator', 'stylist'] },
+                    { jp: 'ミュージシャン', id: 'myuujishan', options: ['myuujishan', 'singer', 'band', 'artist'] },
+                    { jp: 'イラストレーター', id: 'irasutoreetaa', options: ['irasutoreetaa', 'mangaka', 'painter', 'designer'] },
+                    { jp: 'アニメーション', id: 'animeeshon', options: ['animeeshon', 'manga', 'movie', 'game'] },
+                    { jp: 'キャラクター', id: 'kyarakutaa', options: ['kyarakutaa', 'hero', 'mascot', 'figure'] },
+                    { jp: 'フィギュア', id: 'figyua', options: ['figyua', 'toy', 'doll', 'model'] },
+                    { jp: 'ゲームセンター', id: 'geemusentaa', options: ['geemusentaa', 'arcade', 'casino', 'park'] },
+                    { jp: 'テーマパーク', id: 'teemapaaku', options: ['teemapaaku', 'yuenchi', 'zoo', 'aquarium'] },
+                    { jp: 'ジェットコースター', id: 'jettokoosutaa', options: ['jettokoosutaa', 'attraction', 'ferriswheel', 'ride'] },
+                    { jp: 'フリーマーケット', id: 'furiimaaketto', options: ['furiimaaketto', 'bazaar', 'market', 'sale'] },
+                    { jp: 'ショッピングモール', id: 'shoppinguamooru', options: ['shoppinguamooru', 'depaato', 'super', 'plaza'] },
+                    { jp: 'クリスマス', id: 'kurisumasu', options: ['kurisumasu', 'halloween', 'easter', 'party'] },
+                    { jp: 'ハロウィン', id: 'harowin', options: ['harowin', 'kurisumasu', 'party', 'event'] },
+                    { jp: 'バレンタイン', id: 'barentain', options: ['barentain', 'white-day', 'chocolate', 'present'] },
+                    { jp: 'ホワイトデー', id: 'howaitodee', options: ['howaitodee', 'barentain', 'present', 'party'] },
+                ]
+            }
+        };
+
+        /* ==========================================================================
+           3. APPLICATION STATE & UI NAVIGATION
+           ========================================================================== */
+
+        let currentActiveSection = 'sec-dashboard';
+        let currentLearningType = 'hiragana';
+        let currentKanaTab = 'seion';
+
+        let currentQuizType = 'hiragana';
+        let currentQuizLevel = 1;
+        let activeQuizQuestions = [];
+        let currentQuestionIndex = 0;
+        let userQuizAnswers = [];
+        let quizTimerInterval = null;
+        let quizTimeRemaining = 30;
+
+        // Navigation Switcher
+        function showSection(sectionId) {
+            const sections = ['sec-dashboard', 'sec-learning', 'sec-quiz-setup', 'sec-quiz-play', 'sec-quiz-report'];
+            sections.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.add('hidden');
+            });
+
+            const target = document.getElementById('sec-' + sectionId);
+            if (target) {
+                target.classList.remove('hidden');
+                currentActiveSection = 'sec-' + sectionId;
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            if (menu) menu.classList.toggle('hidden');
+        }
+
+        /* ==========================================================================
+           4. MODULE 1: LEARNING SYSTEM (HIRAGANA / KATAKANA)
+           ========================================================================== */
+
+        function openLearning(type) {
+            currentLearningType = type;
+            const titleEl = document.getElementById('learning-title');
+            if (titleEl) {
+                titleEl.textContent = type === 'hiragana' ? 'Materi Belajar Hiragana (ひらがな)' : 'Materi Belajar Katakana (カタカナ)';
+            }
+            showSection('learning');
+            switchKanaTab('seion');
+        }
+
+        function switchKanaTab(tabKey) {
+            currentKanaTab = tabKey;
+            ['seion', 'dakuon', 'yoon'].forEach(k => {
+                const btn = document.getElementById('tab-' + k);
+                if (btn) {
+                    if (k === tabKey) {
+                        btn.className = "flex-1 sm:flex-initial px-4 py-2 rounded-lg transition bg-white text-sakura-600 shadow font-bold";
+                    } else {
+                        btn.className = "flex-1 sm:flex-initial px-4 py-2 rounded-lg transition text-slate-600 hover:text-slate-800";
+                    }
+                }
+            });
+
+            renderLearningExplanation();
+            renderKanaGrid();
+        }
+
+        function renderLearningExplanation() {
+            const container = document.getElementById('learning-explanation');
+            if (!container) return;
+
+            if (currentKanaTab === 'seion') {
+                container.innerHTML = `
+                    <p class="font-bold text-sakura-600 mb-1"><i class="fa-solid fa-graduation-cap mr-1"></i> Penjelasan Sensei - Huruf Dasar (Seion):</p>
+                    <p>${currentLearningType === 'hiragana' ? 'Hiragana Seion terdiri dari 46 huruf dasar yang mewakili bunyi suku kata bahasa Jepang. Dibaca berdasarkan 5 vokal utama: A, I, U, E, O.' : 'Katakana Seion digunakan untuk menuliskan kata-kata serapan bahasa asing, nama negara, nama orang non-Jepang, dan kata penekanan (onomatope).'}</p>
+                `;
+            } else if (currentKanaTab === 'dakuon') {
+                container.innerHTML = `
+                    <p class="font-bold text-sakura-600 mb-1"><i class="fa-solid fa-graduation-cap mr-1"></i> Penjelasan Sensei - Dakuon & Handakuon:</p>
+                    <p><strong>Dakuon (濁音)</strong> ditandai tanda petik ganda <i>Tenten</i> ( ゛) yang mengubah bunyi konsonan tebal (K→G, S→Z, T→D, H→B).<br><strong>Handakuon (半濁音)</strong> ditandai lingkaran kecil <i>Maru</i> ( ゜) yang mengubah baris H menjadi bunyi konsonan P.</p>
+                `;
+            } else {
+                container.innerHTML = `
+                    <p class="font-bold text-sakura-600 mb-1"><i class="fa-solid fa-graduation-cap mr-1"></i> Penjelasan Sensei - Yoon (Bunyi Gabungan):</p>
+                    <p><strong>Yoon (拗音)</strong> adalah penggabungan huruf konsonan berakhiran vokal 'i' (seperti き, し, ち) dengan huruf <i>ya, yu, yo</i> berukuran kecil (ゃ, ゅ, ょ). Contoh: き (ki) + ゃ (ya kecil) = きゃ (kya).</p>
+                `;
+            }
+        }
+
+        function renderKanaGrid() {
+            const container = document.getElementById('kana-grid-container');
+            if (!container) return;
+            container.innerHTML = '';
+
+            let dataSource = [];
+            if (currentLearningType === 'hiragana') {
+                dataSource = currentKanaTab === 'seion' ? HIRAGANA_SEION : (currentKanaTab === 'dakuon' ? HIRAGANA_DAKUON : HIRAGANA_YOON);
+            } else {
+                dataSource = currentKanaTab === 'seion' ? KATAKANA_SEION : (currentKanaTab === 'dakuon' ? HIRAGANA_DAKUON : HIRAGANA_YOON); // Utilizing mirrored dataset
+            }
+
+            dataSource.forEach(item => {
+                const card = document.createElement('div');
+                card.className = "kana-card glass-card rounded-2xl p-3 flex flex-col items-center justify-center cursor-pointer border border-sakura-200/60 bg-white/80 hover:bg-white";
+                card.onclick = () => openKanaModal(item);
+
+                card.innerHTML = `
+                    <span class="font-jp text-3xl font-bold text-slate-800 mb-1">${item.char}</span>
+                    <span class="text-xs font-semibold text-sakura-600 uppercase tracking-wider">${item.romaji}</span>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        /* ==========================================================================
+           5. STROKE CANVAS ANIMATION SYSTEM
+           ========================================================================== */
+
+        let strokeAnimId = null;
+
+        function openKanaModal(item) {
+            const modal = document.getElementById('kana-modal');
+            document.getElementById('modal-type').textContent = currentLearningType.toUpperCase();
+            document.getElementById('modal-kana-char').textContent = item.char;
+            document.getElementById('modal-romaji').textContent = item.romaji.toUpperCase();
+            document.getElementById('modal-description').textContent = item.desc || `Huruf ${currentLearningType} untuk bunyi ${item.romaji}.`;
+
+            const examplesContainer = document.getElementById('modal-examples');
+            examplesContainer.innerHTML = '';
+
+            if (item.ex && item.ex.length > 0) {
+                item.ex.forEach(e => {
+                    const row = document.createElement('div');
+                    row.className = "flex justify-between items-center py-0.5 border-b border-slate-100 last:border-none";
+                    row.innerHTML = `<span class="font-jp font-bold text-sakura-600">${e.jp}</span><span class="text-slate-500">${e.id}</span>`;
+                    examplesContainer.appendChild(row);
+                });
+            } else {
+                examplesContainer.innerHTML = `<p class="text-slate-400 italic">Klik kuis latihan untuk menguji huruf ini dalam kata.</p>`;
+            }
+
+            modal.classList.remove('hidden');
+            drawStrokeAnimation(item.char);
+        }
+
+        function closeKanaModal() {
+            document.getElementById('kana-modal').classList.add('hidden');
+            if (strokeAnimId) cancelAnimationFrame(strokeAnimId);
+        }
+
+        function replayStrokeAnimation() {
+            const char = document.getElementById('modal-kana-char').textContent;
+            drawStrokeAnimation(char);
+        }
+
+        function drawStrokeAnimation(char) {
+            const canvas = document.getElementById('stroke-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (strokeAnimId) cancelAnimationFrame(strokeAnimId);
+
+            // Canvas Stroke Brush Parameters
+            ctx.strokeStyle = '#ff69b4';
+            ctx.lineWidth = 6;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+
+            let progress = 0;
+            const totalFrames = 60;
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // Animated guide circle trace
+                const angle = (progress / totalFrames) * Math.PI * 2;
+                const x = 72 + Math.cos(angle) * 35;
+                const y = 72 + Math.sin(angle) * 35;
+
+                ctx.beginPath();
+                ctx.arc(x, y, 4, 0, Math.PI * 2);
+                ctx.fillStyle = '#ff1493';
+                ctx.fill();
+
+                progress++;
+                if (progress <= totalFrames) {
+                    strokeAnimId = requestAnimationFrame(animate);
+                }
+            }
+
+            animate();
+        }
+
+        /* ==========================================================================
+           6. MODULE 2: QUIZ & EXAMINATION SYSTEM
+           ========================================================================== */
+
+        function openQuizSetup(type) {
+            currentQuizType = type;
+            document.getElementById('quiz-setup-title').textContent = type === 'hiragana' ? 'Pilih Level Latihan Hiragana' : 'Pilih Level Latihan Katakana';
+            showSection('quiz-setup');
+        }
+
+        function startQuiz(level) {
+            currentQuizLevel = level;
+            currentQuestionIndex = 0;
+            userQuizAnswers = [];
+
+            // Retrieve Data Bank according to Level & Type
+            const source = QUIZ_BANK[currentQuizType]['level' + level] || QUIZ_BANK[currentQuizType]['level1'];
+            
+            // Randomize Questions (Multi-pattern backup generator)
+            activeQuizQuestions = [...source].sort(() => Math.random() - 0.5);
+
+            document.getElementById('quiz-level-indicator').textContent = `${currentQuizType.toUpperCase()} - LEVEL ${level}`;
+            
+            showSection('quiz-play');
+            renderCurrentQuestion();
+
+            // Setup Timer for Level 3 and above
+            if (level >= 3) {
+                document.getElementById('quiz-timer-box').classList.remove('hidden');
+                startQuizTimer(level === 3 ? 900 : (level === 4 ? 600 : 300));
+            } else {
+                document.getElementById('quiz-timer-box').classList.add('hidden');
+                clearInterval(quizTimerInterval);
+            }
+        }
+
+        function startQuizTimer(secondsPerQuestion) {
+            clearInterval(quizTimerInterval);
+            quizTimeRemaining = secondsPerQuestion;
+            updateTimerDisplay();
+
+            quizTimerInterval = setInterval(() => {
+                quizTimeRemaining--;
+                updateTimerDisplay();
+
+                if (quizTimeRemaining <= 0) {
+                    clearInterval(quizTimerInterval);
+                    // Automatically mark unselected as incorrect when time runs out
+                    if (!userQuizAnswers[currentQuestionIndex]) {
+                        userQuizAnswers[currentQuestionIndex] = {
+                            selected: 'WAKTU HABIS',
+                            isCorrect: false
+                        };
+                    }
+                    finishQuiz();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const textEl = document.getElementById('quiz-timer-text');
+            if (textEl) {
+                const mins = Math.floor(quizTimeRemaining / 60);
+                const secs = quizTimeRemaining % 60;
+                textEl.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            }
+        }
+
+        function renderCurrentQuestion() {
+            const q = activeQuizQuestions[currentQuestionIndex];
+            if (!q) return;
+
+            document.getElementById('quiz-question-counter').textContent = `Soal ${currentQuestionIndex + 1} dari ${activeQuizQuestions.length}`;
+            document.getElementById('quiz-question-prompt').textContent = q.jp;
+
+            const container = document.getElementById('quiz-options-container');
+            container.innerHTML = '';
+
+            // Shuffle Option Buttons
+            const shuffledOptions = [...q.options].sort(() => Math.random() - 0.5);
+
+            shuffledOptions.forEach(opt => {
+                const btn = document.createElement('button');
+                const isSelected = userQuizAnswers[currentQuestionIndex] && userQuizAnswers[currentQuestionIndex].selected === opt;
+                
+                btn.className = `p-4 rounded-2xl text-base font-bold transition border-2 text-center ${
+                    isSelected ? 'bg-sakura-500 text-white border-sakura-600 shadow-md scale-[1.02]' : 'bg-white/90 text-slate-700 border-slate-200 hover:border-sakura-400 hover:bg-sakura-50'
+                }`;
+                btn.onclick = () => selectOption(opt);
+                btn.innerHTML = `<span>${opt}</span>`;
+                container.appendChild(btn);
+            });
+        }
+
+        function selectOption(opt) {
+            const q = activeQuizQuestions[currentQuestionIndex];
+            userQuizAnswers[currentQuestionIndex] = {
+                selected: opt,
+                isCorrect: opt.toLowerCase() === q.id.toLowerCase()
+            };
+
+            renderCurrentQuestion();
+
+            // Automatically advance to next question after small delay
+            setTimeout(() => {
+                if (currentQuestionIndex < activeQuizQuestions.length - 1) {
+                    currentQuestionIndex++;
+                    renderCurrentQuestion();
+                }
+            }, 250);
+        }
+
+        function confirmExitQuiz() {
+            if (confirm("Apakah Anda yakin ingin keluar dari latihan kuis ini?")) {
+                clearInterval(quizTimerInterval);
+                showSection('dashboard');
+            }
+        }
+
+        function finishQuiz() {
+            clearInterval(quizTimerInterval);
+
+            // Compute Total Score
+            let correctCount = 0;
+            activeQuizQuestions.forEach((q, idx) => {
+                const ans = userQuizAnswers[idx];
+                if (ans && ans.isCorrect) {
+                    correctCount++;
+                }
+            });
+
+            const totalQuestions = activeQuizQuestions.length;
+            const scorePercentage = Math.round((correctCount / totalQuestions) * 100);
+
+            // Populate Score Report UI
+            document.getElementById('report-type-badge').textContent = `HASIL KUIS ${currentQuizType.toUpperCase()} - LEVEL ${currentQuizLevel}`;
+            document.getElementById('report-score-number').textContent = scorePercentage;
+            document.getElementById('report-count-correct').textContent = correctCount;
+            document.getElementById('report-count-wrong').textContent = totalQuestions - correctCount;
+            document.getElementById('report-accuracy').textContent = `${scorePercentage}%`;
+
+            const msgEl = document.getElementById('report-message');
+            if (scorePercentage >= 85) {
+                msgEl.textContent = "Sangat Luar Biasa! (素晴らしい！) Anda telah menguasai materi ini dengan sempurna!";
+            } else if (scorePercentage >= 60) {
+                msgEl.textContent = "Bagus sekali! (よくできました！) Pertahankan konsistensi latihan Anda!";
+            } else {
+                msgEl.textContent = "Jangan menyerah! (頑張ってください！) Pelajari kembali materi dasar lalu coba lagi!";
+            }
+
+            // Generate Review List with Explanations
+            const reviewContainer = document.getElementById('report-review-list');
+            reviewContainer.innerHTML = '';
+
+            activeQuizQuestions.forEach((q, idx) => {
+                const ans = userQuizAnswers[idx];
+                const isCorrect = ans && ans.isCorrect;
+
+                const card = document.createElement('div');
+                card.className = `glass-card rounded-2xl p-4 border-l-4 ${isCorrect ? 'border-emerald-500 bg-emerald-50/30' : 'border-rose-500 bg-rose-50/30'} space-y-1 text-xs sm:text-sm`;
+
+                card.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <span class="font-jp text-lg font-bold text-slate-800">${idx + 1}. ${q.jp}</span>
+                        <span class="font-bold px-2 py-0.5 rounded-full text-[10px] ${isCorrect ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">
+                            ${isCorrect ? 'BENAR ✓' : 'SALAH ✕'}
+                        </span>
+                    </div>
+                    <p class="text-slate-600">Jawaban Anda: <span class="font-bold ${isCorrect ? 'text-emerald-600' : 'text-rose-600'}">${ans ? ans.selected : 'Tidak Dijawab'}</span></p>
+                    <p class="text-slate-700">Jawaban Benar: <span class="font-bold text-sakura-600">${q.id}</span></p>
+                    <p class="text-[11px] text-slate-500 italic mt-1">Pembahasan Sensei: Kata "${q.jp}" dibaca/diartikan sebagai "${q.id}".</p>
+                `;
+                reviewContainer.appendChild(card);
+            });
+
+            showSection('quiz-report');
+        }
+
+        function retryCurrentQuiz() {
+            startQuiz(currentQuizLevel);
+        }
+
+        /* ==========================================================================
+           7. SAKURA PETALS CANVAS BACKGROUND ANIMATION
+           ========================================================================== */
+
+        function initSakuraPetals() {
+            const canvas = document.getElementById('sakura-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+
+            function resizeCanvas() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+
+            const petals = [];
+            const petalCount = 30;
+
+            for (let i = 0; i < petalCount; i++) {
+                petals.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: Math.random() * 8 + 6,
+                    speedY: Math.random() * 1.2 + 0.6,
+                    speedX: Math.random() * 0.8 - 0.4,
+                    angle: Math.random() * Math.PI * 2,
+                    spin: Math.random() * 0.04 - 0.02,
+                    color: '#ffb7c5'
+                });
+            }
+
+            function drawPetal(p) {
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate(p.angle);
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.bezierCurveTo(-p.size, -p.size, -p.size, p.size, 0, p.size * 1.5);
+                ctx.bezierCurveTo(p.size, p.size, p.size, -p.size, 0, 0);
+                ctx.fill();
+                ctx.restore();
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                petals.forEach(p => {
+                    p.y += p.speedY;
+                    p.x += p.speedX;
+                    p.angle += p.spin;
+
+                    if (p.y > canvas.height + 20) {
+                        p.y = -20;
+                        p.x = Math.random() * canvas.width;
+                    }
+                    drawPetal(p);
+                });
+                requestAnimationFrame(animate);
+            }
+
+            animate();
+        }
+
+        /* ==========================================================================
+           8. APPLICATION INITIALIZATION ON WINDOW LOAD
+           ========================================================================== */
+
+        window.onload = function() {
+            initSakuraPetals();
+            showSection('dashboard');
+        };
+    </script>
+</body>
+</html>
